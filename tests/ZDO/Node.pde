@@ -5,13 +5,15 @@ class Node {
   NodeDiscover nd;  // node descriptor information  
   Particle p;
   color c;
+  int nodeDisplaySize = 80;
   
   ArrayList<XBeeAddress64> connections; 
   
   Node(NodeDiscover nd) {
+    println("building a new NODE");
     this.nd = nd;
     p = physics.makeParticle();
-    p.position().set(random(width), random(height), 0);  
+    p.position().set(random(nodeDisplaySize/2,width-nodeDisplaySize/2), random(nodeDisplaySize/2,height-nodeDisplaySize/2), 0);  
     
     NodeDiscover.DeviceType t = nd.getDeviceType(); 
     if (t == NodeDiscover.DeviceType.DEV_TYPE_COORDINATOR) c = color(0, 255, 0);
@@ -26,7 +28,7 @@ class Node {
     fill(0);
     stroke(c);
     strokeWeight(2);
-    ellipse(0, 0, 75, 75);
+    ellipse(0, 0, nodeDisplaySize, nodeDisplaySize);
     fill(c); 
     textAlign(CENTER);
     text(nd.getNodeIdentifier(), 0, 6);  
@@ -41,7 +43,7 @@ class Node {
        if (toNode != null) {
          physics.makeSpring(p, toNode.p, 0.2, 0.2, LINK_LENGTH);
          connections.remove(addr); 
-       }
+       }  
     }
   }
   
