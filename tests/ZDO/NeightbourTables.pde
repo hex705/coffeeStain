@@ -52,7 +52,7 @@ void parseNeighbourTableResponse(ZNetExplicitRxResponse r) {
     int lqi = d[i]; // link quality estimation (255 == best) 
     println(lqi); 
     
-    fromNode.connect(addr); // build a physics string between two addresses
+    fromNode.connect(addr, lqi); // build a physics string between two addresses
   }
   
   if ( start+count < total ) {
