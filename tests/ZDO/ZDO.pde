@@ -50,7 +50,7 @@ boolean displayShort = false;
 
 //------------------------------------------------------------------
 void setup() {   
-  size(500, 500);
+  size(720, 500);
   try {
     xbee = new XBee();
     xbee.open(modem, baud);

@@ -50,20 +50,24 @@ class Node {
     // calculate the textSize
     textSize(12); 
     String id = nd.getNodeIdentifier();
-    if (displayShort) {
-      if ( id.charAt(3) == '_') {
-        println("we have a prefixed name");
-        id = id.substring (0,3);
-        textSize(18);
+      // see if device has a short name 
+      // if so display the short name ONLY when 
+      // displayShort = true
+      if (displayShort) {
+        int i = id.indexOf('_');
+        if ( i > 0 ) {
+          println("we have a prefixed name");
+          id = id.substring (0,i);
+          textSize(20);
+        }
       }
-    }
     float w = textWidth(id);
     if ( w > 80 ) {
       textSize( 12 * 70/w);        
     }
     text(id, 0, 0); 
     textSize(12);
-     text("\n"+link, 0, 0);  
+    text("\n"+link, 0, 0);  
     popMatrix();  
   }
   
