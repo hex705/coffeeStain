@@ -56,7 +56,6 @@ class Node {
       if (displayShort) {
         int i = id.indexOf('_');
         if ( i > 0 ) {
-          println("we have a prefixed name");
           id = id.substring (0,i);
           textSize(20);
         }
