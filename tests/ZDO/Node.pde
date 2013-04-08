@@ -50,11 +50,20 @@ class Node {
     // calculate the textSize
     textSize(12); 
     String id = nd.getNodeIdentifier();
+    if (displayShort) {
+      if ( id.charAt(3) == '_') {
+        println("we have a prefixed name");
+        id = id.substring (0,3);
+        textSize(18);
+      }
+    }
     float w = textWidth(id);
     if ( w > 80 ) {
       textSize( 12 * 70/w);        
     }
-    text(id+"\n"+link, 0, 0);  
+    text(id, 0, 0); 
+    textSize(12);
+     text("\n"+link, 0, 0);  
     popMatrix();  
   }
   
