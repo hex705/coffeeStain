@@ -43,7 +43,7 @@ void parseNeighbourTableResponse(ZNetExplicitRxResponse r) {
     XBeeAddress64 addr = new XBeeAddress64(d[i+7], d[i+6], d[i+5], d[i+4], d[i+3], d[i+2], d[i+1], d[i]);
     i += 8; 
     XBeeAddress16 addr16 = new XBeeAddress16(d[i+1], d[i]);
-    println("[" + hex(addr16.get16BitValue(), 4) + "] " + addr);
+    println("[" + hex(addr16.get16BitValue(), 4) + "] " + addr); // query node (local) address
     i += 2;     
     int packed = d[i++]; // the next byte contains packed info on device type, receiver on and relationship 
     println(binary(packed, 8)); 

@@ -29,7 +29,8 @@ import java.awt.event.*;
 import com.rapplogic.xbee.api.zigbee.NodeDiscover;
 import traer.physics.*;
 
-String modem =  "/dev/tty.usbserial-A7004nRz"; // Steve's modem
+//String modem =  "/dev/tty.usbserial-A7004nRz"; // Steve's other modem
+String modem =  "/dev/tty.usbserial-A80081Dt"; // Steve's modem
 //String modem =  "/dev/tty.usbserial-A901JXFC"; // David's modem
 int baud = 38400; // radio baud = 5
 
@@ -38,6 +39,15 @@ XBee xbee;
 Queue<XBeeResponse> queue = new ConcurrentLinkedQueue<XBeeResponse>();
 
 XBeeAddress64 ourAddress;
+// some other quesryNOde cahracteristics.
+XBeeAddress16 our16Address;
+XBeeAddress64 our64Address;
+XBeeAddress64 ourPan;
+
+
+int[] ourDeviceType = {0,00,0x03,0x00,0x00,0x00};
+
+QueryNode qNode;
 
 // automatically generated device list 
 ArrayList<Node> network = new ArrayList();
@@ -74,7 +84,13 @@ void setup() {
     int[] full = {h[0], h[1], h[2], h[3], l[0], l[1], l[2], l[3]};
     ourAddress = new XBeeAddress64(full);
     println("Our address: " + ourAddress);
+   
+    qNode=new QueryNode ( ourAddress );
+    // get characteristics of local radio
+    //getQueryNodeCharacteristics();
     
+    
+     
     // send a Node Discovery command 
     xbee.sendAsynchronous(new AtCommand("ND"));    
   }
@@ -129,7 +145,9 @@ void draw() {
 //------------------------------------------------------------------
 void readPackets() {
   XBeeResponse response;
+
   while ( (response = queue.poll ()) != null) { 
+       // println("---->  full response " + response);
     ApiId id = response.getApiId();      
     println("Received: " + id);
     //--------------------------------------------------------------
@@ -187,6 +205,5 @@ void keyPressed() {
     }
   }
 }
-
 
 

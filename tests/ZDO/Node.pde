@@ -1,6 +1,6 @@
 class Node {
   
-  int LINK_LENGTH = 400; // for drawing/physics purposes 
+  int LINK_LENGTH = 500; // for drawing/physics purposes 
   
   NodeDiscover nd;  // node descriptor information  
   Particle p;  
@@ -40,10 +40,23 @@ class Node {
   void display() {
     pushMatrix();
     translate(p.position().x(), p.position().y()); 
-    fill(0);
+     fill(0);
     stroke(c);
     strokeWeight(2);
     ellipse(0, 0, nodeDisplaySize, nodeDisplaySize);
+
+    // add some rings to indicate signal strength -- we need to represent ourselves.
+    // add a node at beginning and place it at center ?
+    pushStyle();
+        noFill();
+        strokeWeight(3);  
+        stroke(color(255-red(c), 255-green(c),0));
+        arc(0,0,nodeDisplaySize+8, nodeDisplaySize+8,-PI/2, radians( map(link,0,255,0,360))-PI/2);
+        stroke(100);
+        arc(0,0,nodeDisplaySize+8, nodeDisplaySize+8,radians( map(link,0,255,0,360))-PI/2,TWO_PI-PI/2);
+    popStyle();
+    
+   
     fill(c); 
     textAlign(CENTER);
     
@@ -75,7 +88,7 @@ class Node {
     // check if we need to make new connections since more nodes may have been 
     // discovered 
     for (Map.Entry entry : connections.entrySet()) {
-       XBeeAddress64 addr = (XBeeAddress64)entry.getKey();
+       XBeeAddress64 addr = (XBeeAddress64)entry.getKey();  // hashmap call
        int lqi = (Integer)entry.getValue();
        Node toNode = getNode(addr);
        if (toNode != null && connected.contains(addr) == false) {

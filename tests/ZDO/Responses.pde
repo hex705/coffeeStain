@@ -6,6 +6,8 @@ void readPacket(AtCommandResponse r) {
     NodeDiscover node = NodeDiscover.parse(r);
     addNode(node);
   }
+  // could add the capture routine for local node here ??
+  
   
   
 }
