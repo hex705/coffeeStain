@@ -38,8 +38,9 @@ void updateRepulsions() {
   for (Node n1 : network) {
     for (Node n2 : network) {
       if (n1 != n2) {        
+        // if they are not each other's neighbour 
         if (n1.hasNeighbour(n2) == false && n2.hasNeighbour(n1) == false) {
-          physics.makeAttraction(n1.p, n2.p, 0.2, -2 * n1.LINK_LENGTH);
+          physics.makeAttraction(n1.p, n2.p, -1000, n1.LINK_LENGTH);
           println("added repulstion " + n1 + ", " + n2);
         }
       }
