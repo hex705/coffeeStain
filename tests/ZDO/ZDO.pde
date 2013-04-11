@@ -48,7 +48,7 @@ Camera camera;
 
 //------------------------------------------------------------------
 void setup() {   
-  size(500, 500);
+  size(1280, 720);
   try {
     xbee = new XBee();
     xbee.open(modem, baud);
@@ -62,25 +62,27 @@ void setup() {
     }
     );
 
-    // Discover our 64 bit address
+    // Discover the USB modem's 64 bit address
     AtCommandResponse rl;     
     rl = (AtCommandResponse)xbee.sendSynchronous(new AtCommand("SL"));
     AtCommandResponse rh;     
     rh = (AtCommandResponse)xbee.sendSynchronous(new AtCommand("SH"));
     int[] l = rl.getValue();
     int[] h = rh.getValue();
-    int[] full = {h[0], h[1], h[2], h[3], l[0], l[1], l[2], l[3]};
+    int[] full = {
+      h[0], h[1], h[2], h[3], l[0], l[1], l[2], l[3]
+    };
     ourAddress = new XBeeAddress64(full);
     println("Our address: " + ourAddress);
-    
+
     // send a Node Discovery command 
-    xbee.sendAsynchronous(new AtCommand("ND"));    
+    xbee.sendAsynchronous(new AtCommand("ND"));
   }
   catch (Exception e) {
     e.printStackTrace();
   }
 
-  physics = new ParticleSystem( 0, 0.1 );
+  physics = new ParticleSystem(0, 0.1);
   camera = new Camera();
 
 
@@ -116,12 +118,25 @@ void draw() {
     Particle b = s.getTheOtherEnd();
     line (a.position().x(), a.position().y(), b.position().x(), b.position().y());
   }
+  
+  /*
+  // debug -- show the repulsions
+  for (int i=0; i < physics.numberOfAttractions(); i++) {
+    stroke(0, 255, 0, 64); 
+    Attraction r = physics.getAttraction(i); 
+    Particle a = r.getOneEnd();
+    Particle b = r.getTheOtherEnd();
+    line (a.position().x(), a.position().y(), b.position().x(), b.position().y());
+  }
+  */
 
   // draw and update the nodes 
   for (Node node : network) {
     node.update();    
     node.display();
   }
+
+  
 }
 
 //------------------------------------------------------------------
@@ -133,6 +148,7 @@ void readPackets() {
     //--------------------------------------------------------------
     if (id == ApiId.ZNET_EXPLICIT_RX_RESPONSE ) readPacket((ZNetExplicitRxResponse)response);
     if (id == ApiId.AT_RESPONSE) readPacket((AtCommandResponse)response);
+    if (id == ApiId.REMOTE_AT_RESPONSE) readPacket((RemoteAtResponse)response);
     println("------------------------------------------------------------------------------------");
   }
 }
@@ -181,6 +197,5 @@ void keyPressed() {
     }
   }
 }
-
 
 
