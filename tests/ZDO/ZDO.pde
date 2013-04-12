@@ -12,9 +12,7 @@
 
 //  http://code.google.com/p/xbee-api/
 
-
-// Key controls:
-// s     - randomly re-shuffle the nodes 
+// Key controls: 
 // d     - send a node discovery message
 // space - automatically resize the layout
 // r     - insert repulsions between unconnected nodes
@@ -27,7 +25,10 @@ import java.util.concurrent.*;
 import java.util.*;
 import java.awt.event.*;
 import com.rapplogic.xbee.api.zigbee.NodeDiscover;
-import traer.physics.*;
+
+import toxi.geom.*;
+import toxi.physics2d.*;
+import toxi.physics2d.behaviors.*;
 
 //String modem =  "/dev/tty.usbserial-A80081Dt"; // Steve's modem
 String modem =  "/dev/tty.usbserial-A901JXFC"; // David's modem
@@ -38,13 +39,12 @@ XBee xbee;
 Queue<XBeeResponse> queue = new ConcurrentLinkedQueue<XBeeResponse>();
 
 XBeeAddress64 ourAddress;
-
-// automatically generated device list 
-ArrayList<Node> network = new ArrayList();
-
+ 
 // for the drawing 
-ParticleSystem physics;
 Camera camera;
+Node selection; 
+
+Graph graph;
 
 //------------------------------------------------------------------
 void setup() {   
@@ -82,10 +82,8 @@ void setup() {
     e.printStackTrace();
   }
 
-  physics = new ParticleSystem(0, 0.1);
+  graph = new Graph();
   camera = new Camera();
-
-
   // Here's another one of those anonymous classes!
   addMouseWheelListener(new MouseWheelListener() { 
     public void mouseWheelMoved(MouseWheelEvent mwe) { 
@@ -98,45 +96,28 @@ void setup() {
 
 //------------------------------------------------------------------
 void draw() {
-
-  try { 
-    readPackets();
-  }
-  catch (Exception e) { 
-    e.printStackTrace();
-  }
-
-  physics.tick();
+  
+  readPackets();
+  graph.update(); 
+  
+  // drawing stuff 
   background(0);
   camera.apply();
 
-  // draw the springs
-  stroke(255, 128);
-  for (int i=0; i < physics.numberOfSprings(); i++) {
-    Spring s = physics.getSpring(i); 
-    Particle a = s.getOneEnd();
-    Particle b = s.getTheOtherEnd();
-    line (a.position().x(), a.position().y(), b.position().x(), b.position().y());
-  }
-  
-  /*
-  // debug -- show the repulsions
-  for (int i=0; i < physics.numberOfAttractions(); i++) {
-    stroke(0, 255, 0, 64); 
-    Attraction r = physics.getAttraction(i); 
-    Particle a = r.getOneEnd();
-    Particle b = r.getTheOtherEnd();
-    line (a.position().x(), a.position().y(), b.position().x(), b.position().y());
-  }
-  */
-
-  // draw and update the nodes 
-  for (Node node : network) {
-    node.update();    
-    node.display();
+  // draw the edges
+  for (Edge edge : graph.edges) {
+    
+    if (selection == edge.n1 || selection == edge.n2) strokeWeight(3);
+    else strokeWeight(1);
+    
+    if (edge.c == 1) stroke(255, 128);
+    else if (edge.c == 2) stroke(0, 255, 0, 128);
+    else stroke(255, 0, 0); 
+    line(edge.n1.x, edge.n1.y, edge.n2.x, edge.n2.y);  
   }
 
-  
+  // draw the nodes 
+  for (Node node : graph.nodes) node.display();
 }
 
 //------------------------------------------------------------------
@@ -145,28 +126,48 @@ void readPackets() {
   while ( (response = queue.poll ()) != null) { 
     ApiId id = response.getApiId();      
     println("Received: " + id);
-    //--------------------------------------------------------------
-    if (id == ApiId.ZNET_EXPLICIT_RX_RESPONSE ) readPacket((ZNetExplicitRxResponse)response);
-    if (id == ApiId.AT_RESPONSE) readPacket((AtCommandResponse)response);
-    if (id == ApiId.REMOTE_AT_RESPONSE) readPacket((RemoteAtResponse)response);
-    println("------------------------------------------------------------------------------------");
+    try {
+      //--------------------------------------------------------------
+      if (id == ApiId.ZNET_EXPLICIT_RX_RESPONSE ) readPacket((ZNetExplicitRxResponse)response);
+      if (id == ApiId.AT_RESPONSE) readPacket((AtCommandResponse)response);
+      if (id == ApiId.REMOTE_AT_RESPONSE) readPacket((RemoteAtResponse)response);
+      println("------------------------------------------------------------------------------------");
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }
 
 //------------------------------------------------------------------
 void mouseDragged() {
-  camera.move();
+  if (selection == null) { 
+    camera.move();
+  }
+  else {
+     selection.addSelf(new Vec2D(mouseX-pmouseX, mouseY-pmouseY)); 
+  }
+}
+
+//------------------------------------------------------------------
+void mouseReleased() {
+  if (selection != null) {
+    selection.unlock();
+    selection = null;
+  }  
 }
 
 //------------------------------------------------------------------
 // Mouse picking 
-void mouseClicked() { 
+void mousePressed() { 
   PVector m = camera.mouse();
-  for (Node n : network) {
-    float x = n.p.position().x();
-    float y = n.p.position().y();   
+  for (Node n : graph.nodes) {
+    float x = n.x;
+    float y = n.y;  
     float d = dist(m.x, m.y, x, y); 
-    if ( d < n.nodeDisplaySize ) {
+    if ( d < n.diameter ) {
+      selection = n;
+      selection.lock();
       n.click();
     }
   }
@@ -178,15 +179,12 @@ void keyPressed() {
   if (key == ' ') {  // auto layout 
     camera.auto();
   }
-
-  if (key == 'r') {  // update repulsions across the network
-    updateRepulsions();
-  } 
-
-  if (key == 's') { // shuffle the nodes around
-    for (Node n : network) n.shuffle();
+  
+  if (key == 's') {
+    for (Node n : graph.nodes) n.shuffle();  
+    camera.auto();
   }
-
+   
   if (key == 'd') { // re-send the ND command
     try {
       println("Sending node discover");

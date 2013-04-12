@@ -1,6 +1,5 @@
-//------------------------------------------------------------------
-// Builds a ZDO request for Neighbour Tables  
-
+///////////////////////////////////////////////////////////////////////////////////////
+// Builds a ZDO request for the Neighbour Table 
 ZNetExplicitTxRequest buildNeighbourTableRequest(XBeeAddress64 addr, int index, int messageCount) {
   DoubleByte clusterId = new DoubleByte(0x0, 0x31);  // neighbor table request message is 0x0031
   int frameId = 0x0;
@@ -21,39 +20,39 @@ ZNetExplicitTxRequest buildNeighbourTableRequest(XBeeAddress64 addr, int index, 
   return zdo;
 }
 
-
-
-
 ///////////////////////////////////////////////////////////////////////////////////////
 void parseNeighbourTableResponse(ZNetExplicitRxResponse r) {
   XBeeAddress64 from = r.getRemoteAddress64();
-  Node fromNode = getNode(from);
-  println("Neighbour Table Data received from: " + from);
+  Node fromNode = graph.findNode(from);
   int[] d = r.getData();
   int msgCount = d[0];
   int total = d[2];
   int start = d[3];
   int count = d[4];
   int offset = 5;
+  
   for (int entry=0; entry < count; entry++) { 
     int i = offset + entry*22;
     XBeeAddress64 panId = new XBeeAddress64(d[i+7], d[i+6], d[i+5], d[i+4], d[i+3], d[i+2], d[i+1], d[i]);
-    println(panId);
+    //println(panId);
     i += 8;
     XBeeAddress64 addr = new XBeeAddress64(d[i+7], d[i+6], d[i+5], d[i+4], d[i+3], d[i+2], d[i+1], d[i]);
     i += 8; 
     XBeeAddress16 addr16 = new XBeeAddress16(d[i+1], d[i]);
-    println("[" + hex(addr16.get16BitValue(), 4) + "] " + addr);
+    //println("[" + hex(addr16.get16BitValue(), 4) + "] " + addr);
     i += 2;     
     int packed = d[i++]; // the next byte contains packed info on device type, receiver on and relationship 
-    println(binary(packed, 8)); 
+    //println(binary(packed, 8)); 
     int permit = d[i++]; // this next byte contains permit joining info
     int depth = d[i++]; // depth in the tree, depth of 0 = coordinator 
     int lqi = d[i]; // link quality estimation (255 == best) 
-    println(lqi); 
+    //println(lqi); 
     
-    fromNode.connect(addr, lqi); // build a physics string between two addresses
+    fromNode.addNeighbour(addr, lqi); // build a physics string between two addresses    
+    graph.addConnection(from, addr);
   }
+  println("Neighbour Table Data received from: " + from + " " + (start+count) + "/" + total);
+  
   
   if ( start+count < total ) {
      // we still have neighbours to discover 
