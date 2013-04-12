@@ -21,7 +21,6 @@ class Node extends VerletParticle2D {
     super(random(-width/2, width/2), random(-height/2, height/2));
     //super(0, 0);
     
-    println("Creating a new Node");
     
     this.nd = nd;
     
@@ -35,7 +34,10 @@ class Node extends VerletParticle2D {
     address = nd.getNodeAddress64();
 
     // Each node will maintain a list of neighbour addresses
-    neighbours = new HashMap();     
+    neighbours = new HashMap(); 
+
+    println("Created a new Node: " + this + ", " + address);
+        
   }
      
   //---------------------------------------------------------------------------------

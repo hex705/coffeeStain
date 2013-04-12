@@ -39,7 +39,7 @@ XBee xbee;
 Queue<XBeeResponse> queue = new ConcurrentLinkedQueue<XBeeResponse>();
 
 XBeeAddress64 ourAddress;
- 
+
 // for the drawing 
 Camera camera;
 Node selection; 
@@ -96,24 +96,36 @@ void setup() {
 
 //------------------------------------------------------------------
 void draw() {
-  
-  readPackets();
-  graph.update(); 
-  
-  // drawing stuff 
   background(0);
   camera.apply();
 
+  readPackets();
+  graph.update(); 
+  
   // draw the edges
   for (Edge edge : graph.edges) {
-    
-    if (selection == edge.n1 || selection == edge.n2) strokeWeight(3);
+    boolean selected = false;
+    if (selection == edge.n1 || selection == edge.n2) selected = true;
+
+    if (selected) strokeWeight(5);
     else strokeWeight(1);
-    
-    if (edge.c == 1) stroke(255, 128);
-    else if (edge.c == 2) stroke(0, 255, 0, 128);
+
+    if (edge.count == 1) stroke(255, 128);
+    else if (edge.count == 2) stroke(0, 255, 0, 128);
     else stroke(255, 0, 0); 
-    line(edge.n1.x, edge.n1.y, edge.n2.x, edge.n2.y);  
+    line(edge.n1.x, edge.n1.y, edge.n2.x, edge.n2.y);
+
+    if (selected) {
+      textSize(12);
+      float w = 1.5*textWidth(""+edge.quality);
+      Vec2D middle = edge.getMidPoint();
+      strokeWeight(1);
+      stroke(255);
+      fill(0);
+      ellipse(middle.x, middle.y, w, w);
+      fill(255);
+      text(edge.quality, middle.x, middle.y+5);
+    }
   }
 
   // draw the nodes 
@@ -145,7 +157,7 @@ void mouseDragged() {
     camera.move();
   }
   else {
-     selection.addSelf(new Vec2D(mouseX-pmouseX, mouseY-pmouseY)); 
+    selection.addSelf(new Vec2D(mouseX-pmouseX, mouseY-pmouseY));
   }
 }
 
@@ -154,7 +166,7 @@ void mouseReleased() {
   if (selection != null) {
     selection.unlock();
     selection = null;
-  }  
+  }
 }
 
 //------------------------------------------------------------------
@@ -169,6 +181,7 @@ void mousePressed() {
       selection = n;
       selection.lock();
       n.click();
+      return;
     }
   }
 }
@@ -179,12 +192,12 @@ void keyPressed() {
   if (key == ' ') {  // auto layout 
     camera.auto();
   }
-  
+
   if (key == 's') {
     for (Node n : graph.nodes) n.shuffle();  
     camera.auto();
   }
-   
+
   if (key == 'd') { // re-send the ND command
     try {
       println("Sending node discover");
@@ -195,5 +208,4 @@ void keyPressed() {
     }
   }
 }
-
 

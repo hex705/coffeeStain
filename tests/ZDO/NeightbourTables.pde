@@ -49,7 +49,7 @@ void parseNeighbourTableResponse(ZNetExplicitRxResponse r) {
     //println(lqi); 
     
     fromNode.addNeighbour(addr, lqi); // build a physics string between two addresses    
-    graph.addConnection(from, addr);
+    graph.addConnection(from, addr, lqi);
   }
   println("Neighbour Table Data received from: " + from + " " + (start+count) + "/" + total);
   
