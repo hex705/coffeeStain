@@ -45,17 +45,47 @@ class Node {
     stroke(c);
     strokeWeight(2);
     ellipse(0, 0, nodeDisplaySize, nodeDisplaySize);
+    
+    
+     // add some rings to indicate signal strength -- we need to represent ourselves.
+    // add a node at beginning and place it at center ?
+    pushStyle();
+        noFill();
+        strokeWeight(3);  
+        stroke(color(255-red(c), 255-green(c),0));
+        arc(0,0,nodeDisplaySize+8, nodeDisplaySize+8,-PI/2, radians( map(link,0,255,0,360))-PI/2);
+        stroke(100);
+        arc(0,0,nodeDisplaySize+8, nodeDisplaySize+8,radians( map(link,0,255,0,360))-PI/2,TWO_PI-PI/2);
+    popStyle();
+    
+    
+    
     fill(c); 
     textAlign(CENTER);
 
     // calculate the textSize
     textSize(12); 
     String id = nd.getNodeIdentifier();
+    
+      // see if device has a short name 
+      // if so display the short name ONLY when 
+      // displayShort = true
+      if (displayShort) {
+        int i = id.indexOf('_');
+        if ( i > 0 ) {
+          id = id.substring (0,i);
+          textSize(20);
+        }
+      }
+    
+    
     float w = textWidth(id);
     if ( w > 80 ) {
       textSize( 12 * 70/w);
     }
-    text(id+"\n"+link, 0, 0);  
+     text(id, 0, 0); 
+    textSize(12);
+    text("\n"+link, 0, 0);  
     popMatrix();
   }
 

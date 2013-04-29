@@ -29,8 +29,9 @@ import java.awt.event.*;
 import com.rapplogic.xbee.api.zigbee.NodeDiscover;
 import traer.physics.*;
 
+String modem =  "/dev/tty.usbserial-A7004nRz"; // Steve's other modem
 //String modem =  "/dev/tty.usbserial-A80081Dt"; // Steve's modem
-String modem =  "/dev/tty.usbserial-A901JXFC"; // David's modem
+//String modem =  "/dev/tty.usbserial-A901JXFC"; // David's modem
 int baud = 38400; // radio baud = 5
 
 // xbee-api object 
@@ -45,6 +46,8 @@ ArrayList<Node> network = new ArrayList();
 // for the drawing 
 ParticleSystem physics;
 Camera camera;
+
+boolean displayShort = false;
 
 //------------------------------------------------------------------
 void setup() {   
@@ -185,6 +188,10 @@ void keyPressed() {
 
   if (key == 's') { // shuffle the nodes around
     for (Node n : network) n.shuffle();
+  }
+  
+  if (key == '#') {  // update repulsions across the network
+    displayShort = !displayShort;  // toggle full name 
   }
 
   if (key == 'd') { // re-send the ND command
