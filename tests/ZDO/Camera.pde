@@ -36,11 +36,11 @@ class Camera {
   void auto() {
     minY = minX = 999999;
     maxY = maxX = -999999;
-    for (Node n : network) {
-      minX = min(n.p.position().x(), minX);
-      minY = min(n.p.position().y(), minY);
-      maxX = max(n.p.position().x(), maxX);
-      maxY = max(n.p.position().y(), maxY);
+    for (Node n : graph.nodes) {
+      minX = min(n.x, minX);
+      minY = min(n.y, minY);
+      maxX = max(n.x, maxX);
+      maxY = max(n.y, maxY);
     }
 
     // center of mass
@@ -57,7 +57,7 @@ class Camera {
   }
   
   //---------------------------------------------------------------------------------
-  // Get the location of the mouse, in "camera coordinates" 
+  // Get the location of the mouse, in "camera coordinates", used for picking 
   PVector mouse() {
     float mx = (mouseX - width/2) / scale - tx;
     float my = (mouseY - height/2) / scale - ty;  
