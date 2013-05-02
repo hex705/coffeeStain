@@ -19,8 +19,6 @@ class Node extends VerletParticle2D {
   Node(NodeDiscover nd) {
     // better to start at random
     super(random(-width/2, width/2), random(-height/2, height/2));
-    //super(0, 0);
-    
     
     this.nd = nd;
     
@@ -35,14 +33,13 @@ class Node extends VerletParticle2D {
 
     // Each node will maintain a list of neighbour addresses
     neighbours = new HashMap(); 
-
-    println("Created a new Node: " + this + ", " + address);
-        
+    println("Created a new Node: " + this + ", " + address);        
   }
      
   //---------------------------------------------------------------------------------
+  // Randomize this node's position
   void shuffle() {
-    set(  random(-width/2, width/2), random(-height/2, height/2) );
+    set( random(-width/2, width/2), random(-height/2, height/2) );
   }
      
      
@@ -68,11 +65,10 @@ class Node extends VerletParticle2D {
 
 
   //---------------------------------------------------------------------------------
-  // Connect this node with another 
+  // Add an entry to the node's neighbour table 
   // lqi is 0-255
   // 255 is the best, 0 is the worst
-  void addNeighbour(XBeeAddress64 addr, int lqi) {     
-    
+  void addNeighbour(XBeeAddress64 addr, int lqi) {         
     neighbours.put(addr, lqi);  
     if (addr.equals(ourAddress)) {
       link = lqi; // used to display the link quality from each node to our radio

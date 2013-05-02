@@ -9,13 +9,11 @@
 // Nodes are added to a list as they are discovered
 // Neighbour tables are requested for each node. A spring is created between two nodes if they are neighbours.
 
-
 //  http://code.google.com/p/xbee-api/
 
 // Key controls: 
 // d     - send a node discovery message
-// space - automatically resize the layout
-// r     - insert repulsions between unconnected nodes
+// space - automatically resize the layout 
 
 // Mouse controls:
 // Drag/Scroll - moves and zooms
@@ -34,16 +32,13 @@ import toxi.physics2d.behaviors.*;
 String modem =  "/dev/tty.usbserial-A901JXFC"; // David's modem
 int baud = 38400; // radio baud = 5
 
-// xbee-api object 
 XBee xbee;
 Queue<XBeeResponse> queue = new ConcurrentLinkedQueue<XBeeResponse>();
-
 XBeeAddress64 ourAddress;
 
-// for the drawing 
 Camera camera;
-Node selection; 
 
+Node selection; 
 Graph graph;
 
 //------------------------------------------------------------------
@@ -83,6 +78,7 @@ void setup() {
   }
 
   graph = new Graph();
+  
   camera = new Camera();
   // Here's another one of those anonymous classes!
   addMouseWheelListener(new MouseWheelListener() { 
@@ -100,11 +96,10 @@ void draw() {
   camera.apply();
 
   readPackets();
-  graph.update(); 
   
   // draw the edges
   for (Edge edge : graph.edges) {
-    boolean selected = false;
+    boolean selected = false;    
     if (selection == edge.n1 || selection == edge.n2) selected = true;
 
     if (selected) strokeWeight(5);
@@ -130,6 +125,9 @@ void draw() {
 
   // draw the nodes 
   for (Node node : graph.nodes) node.display();
+  
+  // update/animate the layout
+  graph.update(); 
 }
 
 //------------------------------------------------------------------

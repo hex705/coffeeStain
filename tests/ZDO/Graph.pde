@@ -1,8 +1,9 @@
-class Graph {
+// Connection and Edge class below
 
-  float MIN_NOTE_DISTANCE = 80;
-  float MIN_EDGE_LENGTH = 120;
-  float MAX_EDGE_LENGTH = 400; 
+class Graph {
+ 
+  float MIN_EDGE_LENGTH = 300;
+  float MAX_EDGE_LENGTH = 600; 
 
   VerletPhysics2D physics;
 
@@ -23,38 +24,36 @@ class Graph {
   //---------------------------------------------------------------------------------
   void update() {
     physics.update();  
-
-    ArrayList<Connection> garbage = new ArrayList();
-
-    // check if we need to make connections
-    for (Connection c : waitlist) {
+     
+    // check if there are connections waiting to be made
+    for (int i=0; i < waitlist.size(); i++) {
+      Connection c = waitlist.get(i);      
       Node n1 = findNode(c.a);
       Node n2 = findNode(c.b);
 
-      if (n1 != null && n2 != null) {
+      if (n1 != null && n2 != null) {        
         add(new Edge(n1, n2, c.quality));
-        garbage.add(c);
+        waitlist.remove(c);
       }
     }
-
-    for (Connection c : garbage) waitlist.remove(c); 
-
-    // check if nodes overlap with edges
-    // if so, try to move them apart
+    
+    /*
+    // check if nodes overlap with edges, if so, try to move them apart
+    // !! this is causing more problems than it solves
+    // !! ie: permanent push/pull and drifting.. 
+    // !! leave it out for now
     for (Node n : nodes) {
       for (Edge e : edges) {
         if (e.n1 != n && e.n2 != n) {
           Vec2D closestPoint = e.getClosestPointTo(n);
           Vec2D distance = n.sub(closestPoint);
           if (distance.magnitude() < n.diameter*0.6) {
-          
-          stroke(255, 0, 0);
-          line(closestPoint.x, closestPoint.y, n.x, n.y);
             n.addForce(distance.normalize());
           }
         }
       }
     }
+    */
   }
 
   //---------------------------------------------------------------------------------
@@ -62,7 +61,7 @@ class Graph {
     nodes.add(n);
     physics.addParticle(n);
     // create a negative attraction field aroud this node
-    // the last param (jitter) seems necessary
+    // the last param (jitter) seems necessary.. not sure why 
     physics.addBehavior(new toxi.physics2d.behaviors.AttractionBehavior(n, n.diameter*1.2, -2.2f, 0.05));
   }
 
@@ -71,8 +70,10 @@ class Graph {
     // see if we have this edge already
     for (Edge edge : edges) {
       if (edge.sameAs(e)) {
-        edge.quality = (edge.quality + e.quality) / 2; // average the link quality 
-        edge.count++; // this should never exceed 2...  
+        edge.quality = (edge.quality + e.quality) / 2; // average the link quality
+        // TODO:
+        // this should never exceed 2, but it sometimes does. Need to look into 
+        edge.count++;   
         edge.spring.setRestLength(map(edge.quality, 0, 255, MAX_EDGE_LENGTH, MIN_EDGE_LENGTH));
         return;
       }
@@ -83,6 +84,7 @@ class Graph {
 
     //VerletSpring2D s = new VerletMinDistanceSpring2D(e.n1, e.n2, springLength, 0.02f);
     VerletSpring2D s = new VerletSpring2D(e.n1, e.n2, springLength, 0.02f);
+    
     // Save the spring on the edge itself, so that we can refer to it later 
     e.spring = s;
     physics.addSpring(s);
@@ -100,7 +102,7 @@ class Graph {
 
   //---------------------------------------------------------------------------------
   void addConnection(XBeeAddress64 a, XBeeAddress64 b, int quality) {
-    if (random(1) < 0.7) return;
+    //if (random(1) < 0.7) return; // ** just for testing with different graph shapes *** 
     Connection c = new Connection(a, b, quality); 
     waitlist.add(c);
   }
