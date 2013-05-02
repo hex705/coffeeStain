@@ -28,10 +28,9 @@ import toxi.geom.*;
 import toxi.physics2d.*;
 import toxi.physics2d.behaviors.*;
 
-String modem =  "/dev/tty.usbserial-A7004nRz"; // Steve's other modem
-//String modem =  "/dev/tty.usbserial-A80081Dt"; // Steve's modem
-//String modem =  "/dev/tty.usbserial-A901JXFC"; // David's modem
-int baud = 38400; // radio baud = 5
+// CONFIG FILE OPTIONS
+String modem; // <--- this is now set in a file called "config.properties"
+int baud; // <--- this is now set in a file called "config.properties"
 
 XBee xbee;
 Queue<XBeeResponse> queue = new ConcurrentLinkedQueue<XBeeResponse>();
@@ -47,6 +46,18 @@ Graph graph;
 //------------------------------------------------------------------
 void setup() {   
   size(1280, 720);
+
+  // load settings 
+  try { 
+    Properties config = new Properties();
+    config.load(createInput("config.properties"));
+    modem = config.getProperty("USB");
+    baud = Integer.parseInt(config.getProperty("BAUD"));
+  }
+  catch(IOException e) {
+    e.printStackTrace();
+  }
+
   try {
     xbee = new XBee();
     xbee.open(modem, baud);
@@ -81,7 +92,7 @@ void setup() {
   }
 
   graph = new Graph();
-  
+
   camera = new Camera();
   // Here's another one of those anonymous classes!
   addMouseWheelListener(new MouseWheelListener() { 
@@ -99,7 +110,7 @@ void draw() {
   camera.apply();
 
   readPackets();
-  
+
   // draw the edges
   for (Edge edge : graph.edges) {
     boolean selected = false;    
@@ -128,9 +139,9 @@ void draw() {
 
   // draw the nodes 
   for (Node node : graph.nodes) node.display();
-  
+
   // update/animate the layout
-  graph.update(); 
+  graph.update();
 }
 
 //------------------------------------------------------------------
@@ -198,9 +209,9 @@ void keyPressed() {
     for (Node n : graph.nodes) n.shuffle();  
     camera.auto();
   }
-  
+
   if (key == '#') {  // update repulsions across the network
-    displayShort = !displayShort;  // toggle full name 
+    displayShort = !displayShort;  // toggle full name
   }
 
   if (key == 'd') { // re-send the ND command
